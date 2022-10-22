@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator erd {
+    provider = "prisma-erd-generator"
+    output   = "../db.pdf"
+}
+
+model Users {
+    id        String     @id @default(uuid())
+    name      String
+    email     String     @unique
+    password  String
+    cpf       String     @unique
+    isAdmin   Boolean    @map("is_admin")
+    profile   Profiles[]
+    createdAt DateTime   @default(now()) @map("created_at")
+    updatedAt DateTime   @updatedAt @map("updated_at")
+
+    @@map("users")
+}
+
+model Profiles {
+    id        String      @id @default(uuid())
+    title     String
+    imageUrl  String      @default("https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/2048px-Default_pfp.svg.png") @map("imagem_url")
+    user      Users       @relation(fields: [userId], references: [id])
+    userId    String      @map("user_id")
+    favorites Favorites[]
+    createdAt DateTime    @default(now()) @map("created_at")
+    updatedAt DateTime    @updatedAt @map("updated_at")
+
+    @@map("profiles")
+}
+
+model Games {
+    id          String      @id @default(uuid())
+    title       String      @unique
+    description String
+    image       String
+    year        String
+    score       String
+    trailer     String
+    gameplay    String
+    genres      Genres[]
+    favorites   Favorites[]
+    createdAt   DateTime    @default(now()) @map("created_at")
+    updatedAt   DateTime    @updatedAt @map("updated_at")
+
+    @@map("games")
+}
+
+model Genres {
+    id        String   @id @default(uuid())
+    name      String   @unique
+    games     Games[]
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("genres")
+}
+
+model Favorites {
+    id        String   @id @default(uuid())
+    profile   Profiles @relation(fields: [profileId], references: [id])
+    profileId String   @map("profile_id")
+    games     Games[]
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@map("favorites")
+}
+
+model UserToGame {
+    id        String   @id @default(uuid())
+    userId    String
+    cpf       String
+    email     String
+    action    String
+    game      String
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@map("user_to_game")
+}
